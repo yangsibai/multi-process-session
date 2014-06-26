@@ -1,12 +1,12 @@
 {
     "name": "multi-process-session",
     "description": "manage multi process session",
-    "version": "0.0.1",
+    "version": "0.0.5",
     "author": {
         "name": "massimo",
         "email": "yangsibai@gmail.com"
     },
-    "main": "index.js",
+    "main": "lib/index.js",
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1"
     },
