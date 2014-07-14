@@ -3,6 +3,7 @@ Created by massimo on 2014/4/14.
 ###
 redis = require("redis")
 client = redis.createClient()
+_ = require("underscore")
 
 ###
 设置session
@@ -10,13 +11,13 @@ client = redis.createClient()
 @param session
 @param callback
 ###
-exports.setSession = (sessionID, session, callback) ->
+exports.setSession = (sessionID, session, cb) ->
 	if not session or Object.getOwnPropertyNames(session).length is 0
-		callback null
+		cb null
 	else
 		client.set sessionID, JSON.stringify(session), (err) ->
-			client.expire sessionID, 60 * 60 * 24 * 7, (err) ->
-				callback err  if typeof callback is "function"
+			client.expire sessionID, 60 * 60 * 24 * 15, (err) ->
+				cb err  if _.isFunction(cb)
 
 ###
 获取session值
