@@ -25,7 +25,7 @@ module.exports = (app, type, expireHour) ->
 					maxAge: 3600000 * expireHour
 		else #api
 			#token
-			sid = req.query.Token
+			sid = req.query.Token or uuid.v4()
 
 		if sid
 			res.on "finish", ->
