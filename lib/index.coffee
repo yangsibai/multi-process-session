@@ -6,42 +6,53 @@ uuid = require("node-uuid")
 _ = require("underscore")
 
 ###
-配置session
-@param app
-@param type 类型: cookie 或 token
+    session middleware
+    @param {Object} options
+    @param {String} [options.type="cookie"] session type: cookie or token
+    @param {Number} [options.expire=604800] expire seconds
+    @param {Boolean} [options.refresh=true] refresh every time
 ###
-module.exports = (app, type, expireHour) ->
-    unless _.isNumber(expireHour)
-        expireHour = 24 * 7
+module.exports = (options) ->
+    defaultOptions =
+        type: "cookie"
+        expire: 604800
+        refresh: true
+    options = {} if _.isUndefined(options)
+    for key,value of defaultOptions
+        options[key] = value
 
-    app.use (req, res, next) ->
+    return (req, res, next)->
         sid = ""
-        if _.isUndefined(type) or (type is "cookie") #browser
+        if options.type is "cookie" # is browser
             #cookie
             if req.cookies
                 sid = req.cookies.sid
-                sid = uuid.v4()  unless sid
-                res.cookie "sid", sid, #保存一周时间
-                    maxAge: 3600000 * expireHour
-        else #api
-            #token
+                if sid
+                    if options.refresh
+                        res.cookie "sid", sid, # save cookie
+                            maxAge: options.expire *  1000
+                else
+                    sid = uuid.v4()
+                    res.cookie "sid", sid, # save cookie
+                        maxAge: options.expire *  1000
+            else
+                throw new Error("no cookie support")
+        else # is api
             sid = req.query.Token or uuid.v4()
 
-        if sid
-            res.on "finish", ->
-                if res.session
-                    redisHelper.setSession sid, res.session, expireHour
-            redisHelper.getSession sid, (err, session) ->
-                if err
-                    console.dir err
-                    next(err)
-                else
-                    res.session = req.session = session
-                    res.session.clear = ->
-                        res.session = null
-                        redisHelper.removeSession sid
-                    req.sessionId = sid
-                    next()
-        else
-            res.session = req.session = {}
-            next()
+        res.on "finish", ->
+            if res.session and JSON.stringify(res.session) isnt req._sessionStr
+                redisHelper.setSession sid, res.session, options.expire
+
+        redisHelper.getSession sid, (err, session) ->
+            if err
+                console.error err
+                next(err)
+            else
+                req._sessionStr = JSON.stringify(session)
+                res.session = req.session = session
+                res.session.clear = ->
+                    res.session = null
+                    redisHelper.removeSession sid
+                req.sessionId = res.sesionId = sid
+                next()

@@ -11,12 +11,12 @@ _ = require("underscore")
 @param session
 @param callback
 ###
-exports.setSession = (sessionID, session, expireHours, cb) ->
+exports.setSession = (sessionID, session, expireSeconds, cb) ->
     if not session or Object.getOwnPropertyNames(session).length is 0
         cb(null) if _.isFunction(cb)
     else
         client.set sessionID, JSON.stringify(session), (err) ->
-            client.expire sessionID, 60 * 60 * expireHours, (err) ->
+            client.expire sessionID, expireSeconds, (err) ->
                 cb err if _.isFunction(cb)
 
 ###
@@ -39,4 +39,4 @@ exports.getSession = (sessionID, cb) ->
 ###
 exports.removeSession = (sessionId) ->
     client.del sessionId, (err, result) ->
-        console.dir err if err
+        console.error(err) if err
