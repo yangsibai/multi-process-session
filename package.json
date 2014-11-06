@@ -1,13 +1,15 @@
 {
   "name": "multi-process-session",
   "description": "manage multi process session",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "author": {
     "name": "massimo",
     "email": "yangsibai@gmail.com"
   },
-  "main": "lib/index.js",
+  "main": "bin/index.js",
   "scripts": {
+    "prepublish": "coffee -co bin/ lib/*.coffee",
+    "postpublish": "rm -rf bin",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -22,12 +24,11 @@
     "redis",
     "mysql"
   ],
-  "license": "GPL",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/yangsibai/multi-process-session/issues"
   },
   "dependencies": {
-    "express": "3.4.7",
     "redis": "0.10.1",
     "node-uuid": "1.4.1",
     "underscore": "~1.6.0"

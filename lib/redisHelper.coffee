@@ -11,27 +11,25 @@ _ = require("underscore")
 @param session
 @param callback
 ###
-exports.setSession = (sessionID, session, cb) ->
+exports.setSession = (sessionID, session, expireHours, cb) ->
 	if not session or Object.getOwnPropertyNames(session).length is 0
-		cb null
+		cb(null) if _.isFunction(cb)
 	else
 		client.set sessionID, JSON.stringify(session), (err) ->
-			client.expire sessionID, 60 * 60 * 24 * 15, (err) ->
-				cb err  if _.isFunction(cb)
+			client.expire sessionID, 60 * 60 * expireHours, (err) ->
+				cb err if _.isFunction(cb)
 
 ###
 获取session值
 @param sessionID
 @param callback
 ###
-exports.getSession = (sessionID, callback) ->
-	if callback and typeof callback is "function"
+exports.getSession = (sessionID, cb) ->
+	if _.isFunction(cb)
 		client.get sessionID, (err, result) ->
-			if err
-				callback err
-			else
-				redisResult = JSON.parse(result) or {}
-				callback null, redisResult
+			return cb(err) if err
+            redisResult = JSON.parse(result) or {}
+            cb null, redisResult
 	else
 		throw new Error("need a callback function")
 

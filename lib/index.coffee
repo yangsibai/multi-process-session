@@ -30,8 +30,7 @@ module.exports = (app, type, expireHour) ->
 		if sid
 			res.on "finish", ->
 				if res.session
-					redisHelper.setSession sid, res.session, (err) ->
-						console.error err  if err
+					redisHelper.setSession sid, res.session, expireHour
 			redisHelper.getSession sid, (err, session) ->
 				if err
 					console.dir err
