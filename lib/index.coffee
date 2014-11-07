@@ -19,7 +19,7 @@ module.exports = (options) ->
         refresh: true
     options = {} if _.isUndefined(options)
     for key,value of defaultOptions
-        options[key] = value
+        options[key] = value if _.isUndefined(options[key])
 
     return (req, res, next)->
         sid = ""
