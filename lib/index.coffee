@@ -32,7 +32,7 @@ module.exports = (options) ->
                         res.cookie "sid", sid, # save cookie
                             maxAge: options.expire *  1000
                 else
-                    sid = uuid.v4()
+                    sid = "sid_" + uuid.v4()
                     res.cookie "sid", sid, # save cookie
                         maxAge: options.expire *  1000
             else
