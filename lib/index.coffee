@@ -24,16 +24,17 @@ module.exports = (options) ->
     return (req, res, next)->
         sid = ""
         if options.type is "cookie" # is browser
+            SESSION_ID = "SESSIONID"
             #cookie
             if req.cookies
-                sid = req.cookies.sid
+                sid = req.cookies[SESSION_ID]
                 if sid
                     if options.refresh
-                        res.cookie "sid", sid, # save cookie
+                        res.cookie SESSION_ID, sid, # save cookie
                             maxAge: options.expire *  1000
                 else
                     sid = "sid_" + uuid.v4()
-                    res.cookie "sid", sid, # save cookie
+                    res.cookie SESSION_ID, sid, # save cookie
                         maxAge: options.expire *  1000
             else
                 throw new Error("no cookie support")
