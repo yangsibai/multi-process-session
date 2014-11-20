@@ -1,7 +1,7 @@
 {
   "name": "multi-process-session",
   "description": "manage multi process session",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "author": {
     "name": "massimo",
     "email": "yangsibai@gmail.com"

@@ -31,9 +31,9 @@ module.exports = (options) ->
                 if sid
                     if options.refresh
                         res.cookie SESSION_ID, sid, # save cookie
-                            maxAge: options.expire *  1000
+                            maxAge: options.expire * 1000
                 else
-                    sid = "sid_" + uuid.v4()
+                    sid = uuid.v4()
                     res.cookie SESSION_ID, sid, # save cookie
                         maxAge: options.expire *  1000
             else
