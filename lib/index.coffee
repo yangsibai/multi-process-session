@@ -24,7 +24,7 @@ module.exports = (options) ->
     return (req, res, next)->
         sid = ""
         if options.type is "cookie" # is browser
-            SESSION_ID = "SESSIONID"
+            SESSION_ID = "sid"
             #cookie
             if req.cookies
                 sid = req.cookies[SESSION_ID]
