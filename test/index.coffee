@@ -16,12 +16,12 @@ describe "multi process session test", ->
     app.get "/set-session", (req, res)->
         key = req.query.key
         value = req.query.value
-        req.session[key] = value
+        req.session.set(key, value)
         res.send "set session => #{key} = #{value}"
 
     app.get "/get-session", (req, res)->
         key = req.query.key
-        res.send req.session[key]
+        res.send req.session.get(key)
 
     app.get "/clear-session", (req, res)->
         res.session.clear()

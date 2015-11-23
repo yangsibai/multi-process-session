@@ -5,6 +5,42 @@ redisHelper = require("./redisHelper")
 _ = require("underscore")
 sessionHelper = require('./sessionHelper')
 
+class Session
+    constructor: (@sid, @session)->
+        @session ?= {}
+
+    set: (key, value)->
+        @session[key] = value
+        @changed = true
+
+    get: (key)->
+        return @session[key]
+
+    clear: (cb)->
+        @session = {}
+        redisHelper.removeSession @sid, cb
+
+    setGroupName: (@groupName)->
+
+    clearGroup: ->
+        unless @groupName
+            throw new Error()
+        redisHelper.clearAllByName @groupName
+
+    save: (expire, cb)->
+        redisHelper.setSession @sid, @session, expire, (err)=>
+            if err
+                cb err
+            else
+                if @groupName
+                    redisHelper.addSessionIDByName @groupName, @sid, (err)=>
+                        return cb(err) if err
+                        @changed = false
+                        cb null
+                else
+                    @changed = false
+                    cb null
+
 ###
     session middleware
     @param {Object} options
@@ -16,7 +52,7 @@ module.exports = (options) ->
     defaultOptions =
         type: "cookie"
         expire: 604800
-        refresh: true
+        refresh: true # auto refresh cookie
         secret: 'guess me if you can'
     options = _.extend defaultOptions, options
 
@@ -27,12 +63,11 @@ module.exports = (options) ->
             #cookie
             if req.cookies
                 sid = req.cookies[SESSION_ID]
-                if sid
-                    if options.refresh
-                        res.cookie SESSION_ID, sid, # save cookie
-                            maxAge: options.expire * 1000
-                else
+                unless sid
                     sid = sessionHelper.genSID(options.secret)
+                    res.cookie SESSION_ID, sid, # save cookie
+                        maxAge: options.expire * 1000
+                else if options.refresh
                     res.cookie SESSION_ID, sid, # save cookie
                         maxAge: options.expire * 1000
             else
@@ -41,18 +76,13 @@ module.exports = (options) ->
             sid = req.query.Token or sessionHelper.genSID(options.secret)
 
         res.on "finish", ->
-            if res.session and JSON.stringify(res.session) isnt req._sessionStr
-                redisHelper.setSession sid, res.session, options.expire
+            res.session and res.session.save options.expire, (err)->
+                console.error err if err
 
         redisHelper.getSession sid, (err, session) ->
             if err
                 console.error err
                 next(err)
             else
-                req._sessionStr = JSON.stringify(session)
-                res.session = req.session = session
-                res.session.clear = ->
-                    res.session = null
-                    redisHelper.removeSession sid
-                req.sessionId = res.sesionId = sid
+                req.session = res.session = new Session(sid, session)
                 next()
