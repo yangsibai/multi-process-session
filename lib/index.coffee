@@ -2,8 +2,8 @@
 Created by massimo on 2014/4/14.
 ###
 redisHelper = require("./redisHelper")
-uuid = require("node-uuid")
 _ = require("underscore")
+sessionHelper = require('./sessionHelper')
 
 ###
     session middleware
@@ -17,9 +17,8 @@ module.exports = (options) ->
         type: "cookie"
         expire: 604800
         refresh: true
-    options = {} if _.isUndefined(options)
-    for key,value of defaultOptions
-        options[key] = value if _.isUndefined(options[key])
+        secret: 'guess me if you can'
+    options = _.extend defaultOptions, options
 
     return (req, res, next)->
         sid = ""
@@ -33,13 +32,13 @@ module.exports = (options) ->
                         res.cookie SESSION_ID, sid, # save cookie
                             maxAge: options.expire * 1000
                 else
-                    sid = uuid.v4()
+                    sid = sessionHelper.genSID(options.secret)
                     res.cookie SESSION_ID, sid, # save cookie
-                        maxAge: options.expire *  1000
+                        maxAge: options.expire * 1000
             else
                 throw new Error("no cookie support")
         else # is api
-            sid = req.query.Token or uuid.v4()
+            sid = req.query.Token or sessionHelper.genSID(options.secret)
 
         res.on "finish", ->
             if res.session and JSON.stringify(res.session) isnt req._sessionStr

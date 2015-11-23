@@ -33,6 +33,9 @@ exports.getSession = (sessionID, cb) ->
     else
         throw new Error("need a callback function")
 
+_removeSession = (sessionId)->
+
+
 ###
 删除session
 @param sessionId
@@ -40,3 +43,11 @@ exports.getSession = (sessionID, cb) ->
 exports.removeSession = (sessionId) ->
     client.del sessionId, (err, result) ->
         console.error(err) if err
+
+exports.addSessionID = (userID, sessionID, cb) ->
+    client.sadd 'session:ids:' + userID, sessionID, (err)->
+        cb err if _.isFunction cb
+
+exports.clearAllRelatedSession = (userID, cb) ->
+    client.smembers 'session:ids:' + userID, (err, members)->
+        return cb(err) if err
