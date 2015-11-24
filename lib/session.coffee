@@ -17,10 +17,8 @@ class Session
 
     setGroupName: (@groupName)->
 
-    clearGroup: ->
-        unless @groupName
-            throw new Error()
-        redisHelper.clearAllByName @groupName
+    clearGroupByName: (name)->
+        redisHelper.clearAllByName name
 
     save: (expire, cb)->
         redisHelper.setSession @sid, @session, expire, (err)=>
