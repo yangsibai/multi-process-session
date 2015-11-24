@@ -42,7 +42,11 @@ This module is a simple session manager for study purpose. Please don't use it i
         type: "cookie",
         expire: 604800, // seconds, default is 7 days
         secret: 'guess me if you can', // a secret for generate session id
-        refresh: true // refresh cookie expire date every time
+        refresh: true, // refresh cookie expire date every time
+        redisOptions: { // redis options is used to create reids client, check `redis` document to see detail
+            host: '127.0.0.1',
+            port: 6379
+        }
     };
 
     var options = {};
