@@ -1,7 +1,6 @@
 ###
 Created by massimo on 2014/4/14.
 ###
-redisHelper = require("./redisHelper")
 _ = require("underscore")
 sessionHelper = require('./sessionHelper')
 Session = require('./session')
@@ -12,6 +11,8 @@ Session = require('./session')
     @param {String} [options.type="cookie"] session type: cookie or token
     @param {Number} [options.expire=604800] expire seconds
     @param {Boolean} [options.refresh=true] refresh every time
+    @param {String} [options.secret="guess me if you can"]  secret for generate session id
+    @param {Object} [options.redisOptions] options to create redis client
 ###
 module.exports = (options) ->
     defaultOptions =
@@ -19,6 +20,9 @@ module.exports = (options) ->
         expire: 604800
         refresh: true # auto refresh cookie
         secret: 'guess me if you can'
+        redisOptions:
+            host: '127.0.0.1'
+            port: 6379
     options = _.extend defaultOptions, options
 
     return (req, res, next)->
@@ -44,10 +48,10 @@ module.exports = (options) ->
             res.session and res.session.save options.expire, (err)->
                 console.error err if err
 
-        redisHelper.getSession sid, (err, session) ->
+        session = new Session sid, options.redisOptions, (err)->
             if err
                 console.error err
                 next(err)
             else
-                req.session = res.session = new Session(sid, session)
+                req.session = res.session = session
                 next()

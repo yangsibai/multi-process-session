@@ -1,8 +1,13 @@
-redisHelper = require("./redisHelper")
+redis = require("redis")
+_ = require 'underscore'
 
 class Session
-    constructor: (@sid, @session)->
-        @session ?= {}
+    constructor: (@sid, options, cb)->
+        @client = redis.createClient options
+        @client.get @sid, (err, result)=>
+            return cb(err) if err
+            @session = JSON.parse(result) or {}
+            cb null
 
     set: (key, value)->
         @session[key] = value
@@ -13,20 +18,30 @@ class Session
 
     clear: (cb)->
         @session = {}
-        redisHelper.removeSession @sid, cb
+        @client.del @sid, cb
 
     setGroupName: (@groupName)->
 
-    clearGroupByName: (name)->
-        redisHelper.clearAllByName name
+    clearGroupByName: (name, cb)->
+        @client.smembers 'session:ids:' + name, (err, members)=>
+            return cb(err) if err
+            return cb(null) if members.length is 0
+            afterAll = _.after members.length, cb
+            _.each members, (sid)=>
+                @client.del sid, (err)->
+                    if err
+                        cb err
+                    else
+                        afterAll()
 
     save: (expire, cb)->
-        redisHelper.setSession @sid, @session, expire, (err)=>
-            if err
-                cb err
-            else
+        return cb(null) unless @changed
+        @client.set @sid, JSON.stringify(@session), (err)=>
+            return cb(err) if err
+            @client.expire @sid, expire, (err)=>
+                return cb(err) if err
                 if @groupName
-                    redisHelper.addSessionIDByName @groupName, @sid, (err)=>
+                    @client.sadd 'session:ids:' + @groupName, @sid, (err)=>
                         return cb(err) if err
                         @changed = false
                         cb null
