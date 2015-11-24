@@ -4,42 +4,7 @@ Created by massimo on 2014/4/14.
 redisHelper = require("./redisHelper")
 _ = require("underscore")
 sessionHelper = require('./sessionHelper')
-
-class Session
-    constructor: (@sid, @session)->
-        @session ?= {}
-
-    set: (key, value)->
-        @session[key] = value
-        @changed = true
-
-    get: (key)->
-        return @session[key]
-
-    clear: (cb)->
-        @session = {}
-        redisHelper.removeSession @sid, cb
-
-    setGroupName: (@groupName)->
-
-    clearGroup: ->
-        unless @groupName
-            throw new Error()
-        redisHelper.clearAllByName @groupName
-
-    save: (expire, cb)->
-        redisHelper.setSession @sid, @session, expire, (err)=>
-            if err
-                cb err
-            else
-                if @groupName
-                    redisHelper.addSessionIDByName @groupName, @sid, (err)=>
-                        return cb(err) if err
-                        @changed = false
-                        cb null
-                else
-                    @changed = false
-                    cb null
+Session = require('./session')
 
 ###
     session middleware
