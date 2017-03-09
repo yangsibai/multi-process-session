@@ -44,9 +44,11 @@ class Session
                     @client.sadd 'session:ids:' + @groupName, @sid, (err)=>
                         return cb(err) if err
                         @changed = false
+                        @client.quit()
                         cb null
                 else
                     @changed = false
+                    @client.quit()
                     cb null
 
 module.exports = Session
